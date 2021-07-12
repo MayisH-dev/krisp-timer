@@ -31,6 +31,22 @@ namespace Krisp.Timer.UnitTests
         }
 
         [Fact]
+        public void Start_ExecutesMultipleTimes()
+        {
+            Timer timer = new();
+            const int initial = 0;
+            int accumulator = initial;
+
+            const int MillisecondDelay = 10;
+            _ = timer.Start(System.TimeSpan.FromMilliseconds(MillisecondDelay), () => accumulator++, recurrence: 2);
+
+            const int MillisecondsTimeout = 25;
+            Thread.Sleep(MillisecondsTimeout);
+
+            Assert.Equal(initial + MillisecondsTimeout / MillisecondDelay, accumulator);
+        }
+
+        [Fact]
         public void Stop_CancelsAllCallbacks()
         {
             Timer timer = new();
