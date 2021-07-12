@@ -16,13 +16,13 @@ namespace Krisp.Timer
 
 
         /// <inheritdoc />
-        public TimerRequestToken Start(Action<CancellationToken> callback, TimeSpan interval, int recurrence = ITimer.UnlimitedRecurrence)
+        public TimerRequestToken Start(Action<CancellationToken> callback, TimeSpan interval, int recurrence = ITimer.Once)
         {
             Throw.WhenNegative(recurrence, nameof(recurrence));
 
             TimerRequestToken requestToken = new();
 
-            requestToken.CancellationTokenSource.Token.Register(() => _scheduledSet.TryRemove(requestToken, out var _));
+            requestToken.Register(() => _ = TryUncache(requestToken));
 
             if (_scheduledSet.TryAdd(requestToken, Unit.Value))
                 ScheduleTaskPool(callback, interval, recurrence, requestToken.CancellationTokenSource.Token);
@@ -31,19 +31,28 @@ namespace Krisp.Timer
         }
 
         /// <inheritdoc />
+        public void Start(Action<CancellationToken> callback, TimerRequestToken requestToken, TimeSpan interval, int recurrence = ITimer.Once)
+        {
+            Throw.WhenNegative(recurrence, nameof(recurrence));
+            requestToken.ThrowWhenDisposed();
+            ThrowWhenNotInCache(requestToken);
+
+            ScheduleTaskPool(callback, interval, recurrence, requestToken.CancellationTokenSource.Token);
+        }
+
+        /// <inheritdoc />
         public void Cancel(TimerRequestToken requestToken)
         {
             if(requestToken.TryCancel())
-                _scheduledSet.TryRemove(requestToken, out var _);
+                _ = TryUncache(requestToken);
         }
 
         /// <inheritdoc />
         public void Stop()
         {
             foreach(var timerRequestToken in _scheduledSet.Keys)
-            {
                 timerRequestToken.TryCancel();
-            }
+
             _scheduledSet.Clear();
         }
 
@@ -76,5 +85,13 @@ namespace Krisp.Timer
                         }
                 },
                 token);
+
+        private bool TryUncache(TimerRequestToken requestToken) => _scheduledSet.TryRemove(requestToken, out var _);
+
+        private void ThrowWhenNotInCache(TimerRequestToken requestToken)
+        {
+            if(! _scheduledSet.ContainsKey(requestToken))
+                throw new InvalidOperationException("Attmpt to schedule an entangled callback which is not registered with the timer");
+        }
     }
 }

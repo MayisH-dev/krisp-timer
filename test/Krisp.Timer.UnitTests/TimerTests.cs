@@ -13,8 +13,8 @@ namespace Krisp.Timer.UnitTests
             Timer timer = new();
             bool flag = false;
 
-            _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10), ITimer.Once);
-            Thread.Sleep(20);
+            _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
+            Thread.Sleep(40);
 
             Assert.True(flag);
         }
@@ -27,11 +27,25 @@ namespace Krisp.Timer.UnitTests
             int accumulator = initial;
 
             const int Recurrence = 2;
-            _ = timer.Start(_ => accumulator++, TimeSpan.FromMilliseconds(10), recurrence: Recurrence);
+            _ = timer.Start(_ => accumulator++, TimeSpan.Zero, recurrence: Recurrence);
 
-            Thread.Sleep(45);
+            Thread.Sleep(20);
 
             Assert.Equal(initial + Recurrence, accumulator);
+        }
+
+        [Fact]
+        public void Start_ExecutesEntangledCallback()
+        {
+            Timer timer = new();
+            bool flag = false;
+
+            var token = timer.Start(_ => { }, TimeSpan.Zero);
+            timer.Start(_ => flag = true, token, TimeSpan.Zero);
+
+            Thread.Sleep(20);
+
+            Assert.True(flag);
         }
 
         #endregion
@@ -43,9 +57,23 @@ namespace Krisp.Timer.UnitTests
             Timer timer = new();
             bool flag = false;
 
-            var Timer = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10), ITimer.Once);
-            timer.Cancel(Timer);
+            var requestToken = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
+            timer.Cancel(requestToken);
             Thread.Sleep(20);
+
+            Assert.False(flag);
+        }
+
+        [Fact]
+        public void Cancel_CancelsEntangledCallbacks()
+        {
+            Timer timer = new();
+            bool flag = false;
+
+            var requestToken = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
+            timer.Start(_ => flag = true, requestToken, TimeSpan.FromMilliseconds(10));
+            timer.Cancel(requestToken);
+            Thread.Sleep(40);
 
             Assert.False(flag);
         }
@@ -56,11 +84,11 @@ namespace Krisp.Timer.UnitTests
             Timer timer = new();
             bool flag = false;
 
-            _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10), ITimer.Once);
-            var Timer = timer.Start(_ => { }, TimeSpan.FromMilliseconds(10));
+            _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
+            var requestToken = timer.Start(_ => { }, TimeSpan.FromMilliseconds(10));
 
-            timer.Cancel(Timer);
-            Thread.Sleep(20);
+            timer.Cancel(requestToken);
+            Thread.Sleep(30);
 
             Assert.True(flag);
         }
@@ -74,8 +102,8 @@ namespace Krisp.Timer.UnitTests
             Timer timer = new();
             bool flag = false;
 
-            _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10), ITimer.Once);
-            _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10), ITimer.Once);
+            _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
+            _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
             timer.Stop();
             Thread.Sleep(40);
 
