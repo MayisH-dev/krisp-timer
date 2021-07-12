@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 namespace Krisp.Timer
 {
@@ -8,7 +9,7 @@ namespace Krisp.Timer
         public const int Once = 1;
 
         /// <summary>
-        /// Schedules a callback to be invoked at a later time
+        /// Schedules a callback to be invoked at a later time, possibly multiple times
         /// </summary>
         /// <param name="interval">The time span the callback should be invoked in</param>
         /// <param name="callback">The callback</param>

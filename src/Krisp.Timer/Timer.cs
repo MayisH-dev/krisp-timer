@@ -1,17 +1,29 @@
 using System;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Krisp.Timer
 {
     public sealed class Timer : ITimer
     {
+
         public TimerRequestToken Start(TimeSpan interval, Action callback, int recurrence = ITimer.UnlimitedRecurrence)
         {
-            throw new NotImplementedException();
+            TimerRequestToken requestToken = new(new CancellationTokenSource());
+            Task.Run(
+                async () =>
+                {
+                    await Task.Delay(interval);
+                    callback();
+                },
+                requestToken.CancellationTokenSource.Token);
+            return requestToken;
         }
 
-        public void Cancel(TimerRequestToken request)
+        public void Cancel(TimerRequestToken requestToken)
         {
-            throw new NotImplementedException();
+            requestToken.CancellationTokenSource.Cancel();
         }
 
         public void Stop()

@@ -1,3 +1,5 @@
+using System.Threading;
+
 namespace Krisp.Timer
 {
     /// <summary>
@@ -5,6 +7,11 @@ namespace Krisp.Timer
     /// </summary>
     public sealed class TimerRequestToken
     {
+        internal TimerRequestToken(CancellationTokenSource cancellationTokenSource)
+        {
+            CancellationTokenSource = cancellationTokenSource;
+        }
 
+        internal CancellationTokenSource CancellationTokenSource { get; }
     }
 }
