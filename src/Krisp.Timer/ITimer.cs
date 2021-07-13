@@ -14,8 +14,8 @@ namespace Krisp.Timer
         /// <param name="callback">The cancellable <paramref name="callback" /></param>
         /// <param name="interval">The time span delay/interval the <paramref name="callback" /> should be invoked in</param>
         /// <param name="recurrence">How many times the <paramref name="callback" /> should be invoked</param>
-        /// <returns>A <see cref="TimerRequestToken" /> associated with the scheduled callback</returns>
-        TimerRequestToken Start(Action<CancellationToken> callback, TimeSpan interval, int recurrence = Once);
+        /// <returns>A <see cref="RequestToken" /> associated with the scheduled callback</returns>
+        RequestToken Start(Action<CancellationToken> callback, TimeSpan interval, int recurrence = Once);
 
         /// <summary>
         /// Schedules <paramref name="callback" /> to be invoked at a later time, possibly multiple times, with cancellation entangled to an existing request
@@ -24,13 +24,13 @@ namespace Krisp.Timer
         /// <param name ="requestToken">The request token to be associated with the scheduled <paramref name="callback" /></param>
         /// <param name="interval">The time span delay/interval the <paramref name="callback" /> should be invoked in</param>
         /// <param name="recurrence">How many times the <paramref name="callback" /> should be invoked</param>
-        void Start(Action<CancellationToken> callback, TimerRequestToken requestToken, TimeSpan interval, int recurrence = Once);
+        void Start(Action<CancellationToken> callback, RequestToken requestToken, TimeSpan interval, int recurrence = Once);
 
         /// <summary>
         /// Cancels all scheduled callbacks associated with <paramref name="request" />
         /// </summary>
         /// <param name="request">The request token associated with the scheduled callbacks that need to be cancelled</param>
-        void Cancel(TimerRequestToken request);
+        void Cancel(RequestToken request);
 
         /// <summary>
         /// Cancells all scheduled callbacks

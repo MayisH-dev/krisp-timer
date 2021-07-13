@@ -4,6 +4,9 @@ using Xunit;
 
 namespace Krisp.Timer.UnitTests
 {
+    /// <remarks>
+    /// Given the non-deterministic nature of multithreaded environments some unit tests may not execute as intended
+    /// </remarks>
     public sealed class TimerTests
     {
         #region Start Tests
@@ -15,7 +18,7 @@ namespace Krisp.Timer.UnitTests
             bool flag = false;
 
             _ = timer.Start(_ => flag = true, TimeSpan.Zero);
-            Thread.Sleep(20);
+            Thread.Sleep(100);
 
             Assert.True(flag);
         }
@@ -29,8 +32,7 @@ namespace Krisp.Timer.UnitTests
 
             const int Recurrence = 2;
             _ = timer.Start(_ => accumulator++, TimeSpan.Zero, recurrence: Recurrence);
-
-            Thread.Sleep(20);
+            Thread.Sleep(100);
 
             Assert.Equal(initial + Recurrence, accumulator);
         }
@@ -43,8 +45,7 @@ namespace Krisp.Timer.UnitTests
 
             var token = timer.Start(_ => { }, TimeSpan.Zero);
             timer.Start(_ => flag = true, token, TimeSpan.Zero);
-
-            Thread.Sleep(20);
+            Thread.Sleep(50);
 
             Assert.True(flag);
         }
@@ -61,7 +62,7 @@ namespace Krisp.Timer.UnitTests
 
             var requestToken = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
             timer.Cancel(requestToken);
-            Thread.Sleep(40);
+            Thread.Sleep(50);
 
             Assert.False(flag);
         }
@@ -72,10 +73,8 @@ namespace Krisp.Timer.UnitTests
             Timer timer = new();
             int accumulator = 0;
 
-            var requestToken = timer.Start(_ => accumulator++, TimeSpan.FromMilliseconds(10), recurrence: ITimer.UnlimitedRecurrence);
-
-            Thread.Sleep(18);
-
+            var requestToken = timer.Start(_ => accumulator++, TimeSpan.FromMilliseconds(80), recurrence: ITimer.UnlimitedRecurrence);
+            Thread.Sleep(150);
             timer.Cancel(requestToken);
 
             Assert.Equal(1, accumulator);
@@ -90,7 +89,7 @@ namespace Krisp.Timer.UnitTests
             var requestToken = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
             timer.Start(_ => flag = true, requestToken, TimeSpan.FromMilliseconds(10));
             timer.Cancel(requestToken);
-            Thread.Sleep(40);
+            Thread.Sleep(50);
 
             Assert.False(flag);
         }
@@ -103,9 +102,8 @@ namespace Krisp.Timer.UnitTests
 
             _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
             var requestToken = timer.Start(_ => { }, TimeSpan.FromMilliseconds(10));
-
             timer.Cancel(requestToken);
-            Thread.Sleep(40);
+            Thread.Sleep(50);
 
             Assert.True(flag);
         }
@@ -123,7 +121,7 @@ namespace Krisp.Timer.UnitTests
             _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
             _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
             timer.Stop();
-            Thread.Sleep(40);
+            Thread.Sleep(50);
 
             Assert.False(flag);
         }
@@ -141,7 +139,7 @@ namespace Krisp.Timer.UnitTests
             var requestToken = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
             requestToken.Dispose();
             timer.Cancel(requestToken);
-            Thread.Sleep(40);
+            Thread.Sleep(50);
 
             Assert.True(flag);
         }
@@ -158,6 +156,19 @@ namespace Krisp.Timer.UnitTests
             Thread.Sleep(40);
 
             Assert.True(flag);
+        }
+
+        [Fact]
+        public void Start_ThrowsWhenEntanglingToDisposedRequest()
+        {
+            Timer timer = new();
+
+            var requestToken = timer.Start(_ => {}, TimeSpan.Zero);
+            requestToken.Dispose();
+
+            Assert.Throws<InvalidOperationException>(AttemptStartEntangled);
+
+            void AttemptStartEntangled() => timer.Start(_ => {}, requestToken, TimeSpan.Zero);
         }
 
         #endregion

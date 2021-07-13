@@ -11,49 +11,39 @@ namespace Krisp.Timer
         /// A cache of tokens associated with currently scheduled callbacks
         /// </summary>
         /// <remarks>Needed for implementing the <see cref="Stop" /> operation</remarks>
-        private readonly ConcurrentDictionary<TimerRequestToken, Unit> _scheduledSet = new();
+        private readonly ConcurrentDictionary<CachingRequestToken, Unit> _scheduledSet = new();
 
 
         /// <inheritdoc />
-        public TimerRequestToken Start(Action<CancellationToken> callback, TimeSpan interval, int recurrence = ITimer.Once)
+        public RequestToken Start(Action<CancellationToken> callback, TimeSpan interval, int recurrence = ITimer.Once)
         {
             Throw.WhenNegative(recurrence, nameof(recurrence));
 
-            TimerRequestToken requestToken = new();
+            RequestToken requestToken = new CachingRequestToken(_scheduledSet);
 
             requestToken.Schedule(
                 callback,
                 interval,
-                recurrence,
-                AddToCache,
-                RemoveFromCache,
-                RemoveFromCache);
+                recurrence);
 
             return requestToken;
-
-            void AddToCache() => _ = _scheduledSet.TryAdd(requestToken, Unit.Value);
-            void RemoveFromCache() => _ = _scheduledSet.TryRemove(requestToken, out var _);
         }
 
         /// <inheritdoc />
-        public void Start(Action<CancellationToken> callback, TimerRequestToken requestToken, TimeSpan interval, int recurrence = ITimer.Once)
+        public void Start(Action<CancellationToken> callback, RequestToken requestToken, TimeSpan interval, int recurrence = ITimer.Once)
         {
             Throw.WhenNegative(recurrence, nameof(recurrence));
-            ThrowWhenNotInCache(requestToken);
+            if (requestToken is CachingRequestToken token)
+                ThrowWhenNotInCache(token);
 
             requestToken.Schedule(
                 callback,
                 interval,
-                recurrence,
-                disposalCallback: RemoveFromCache,
-                cancellationCallback: RemoveFromCache
-            );
-
-            void RemoveFromCache() => _ = _scheduledSet.TryRemove(requestToken, out var _);
+                recurrence);
         }
 
         /// <inheritdoc />
-        public void Cancel(TimerRequestToken requestToken) => requestToken.TryCancel();
+        public void Cancel(RequestToken requestToken) => requestToken.TryCancel();
 
         /// <inheritdoc />
         public void Stop()
@@ -62,7 +52,7 @@ namespace Krisp.Timer
                 timerRequestToken.TryCancel();
         }
 
-        private void ThrowWhenNotInCache(TimerRequestToken requestToken)
+        private void ThrowWhenNotInCache(CachingRequestToken requestToken)
         {
             if (!_scheduledSet.ContainsKey(requestToken))
                 throw new InvalidOperationException("Attmpt to schedule an entangled callback which is not registered with the timer");
