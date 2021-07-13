@@ -7,14 +7,15 @@ namespace Krisp.Timer.UnitTests
     public sealed class TimerTests
     {
         #region Start Tests
+
         [Fact]
         public void Start_ExecutesCallback()
         {
             Timer timer = new();
             bool flag = false;
 
-            _ = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
-            Thread.Sleep(40);
+            _ = timer.Start(_ => flag = true, TimeSpan.Zero);
+            Thread.Sleep(20);
 
             Assert.True(flag);
         }
@@ -49,6 +50,7 @@ namespace Krisp.Timer.UnitTests
         }
 
         #endregion
+
         #region Cancel Tests
 
         [Fact]
@@ -59,9 +61,24 @@ namespace Krisp.Timer.UnitTests
 
             var requestToken = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
             timer.Cancel(requestToken);
-            Thread.Sleep(20);
+            Thread.Sleep(40);
 
             Assert.False(flag);
+        }
+
+        [Fact]
+        public void Cancel_CancelsFurtherRecursion()
+        {
+            Timer timer = new();
+            int accumulator = 0;
+
+            var requestToken = timer.Start(_ => accumulator++, TimeSpan.FromMilliseconds(10), recurrence: ITimer.UnlimitedRecurrence);
+
+            Thread.Sleep(18);
+
+            timer.Cancel(requestToken);
+
+            Assert.Equal(1, accumulator);
         }
 
         [Fact]
@@ -88,12 +105,13 @@ namespace Krisp.Timer.UnitTests
             var requestToken = timer.Start(_ => { }, TimeSpan.FromMilliseconds(10));
 
             timer.Cancel(requestToken);
-            Thread.Sleep(30);
+            Thread.Sleep(40);
 
             Assert.True(flag);
         }
 
         #endregion
+
         #region Stop Tests
 
         [Fact]
@@ -108,6 +126,38 @@ namespace Krisp.Timer.UnitTests
             Thread.Sleep(40);
 
             Assert.False(flag);
+        }
+
+        #endregion
+
+        #region Disposal Tests
+
+        [Fact]
+        public void Cancel_DoesntCancelWithDisposedRequest()
+        {
+            Timer timer = new();
+            bool flag = false;
+
+            var requestToken = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
+            requestToken.Dispose();
+            timer.Cancel(requestToken);
+            Thread.Sleep(40);
+
+            Assert.True(flag);
+        }
+
+        [Fact]
+        public void Stop_DoesntCancelDisposedRequest()
+        {
+            Timer timer = new();
+            bool flag = false;
+
+            var requestToken = timer.Start(_ => flag = true, TimeSpan.FromMilliseconds(10));
+            requestToken.Dispose();
+            timer.Stop();
+            Thread.Sleep(40);
+
+            Assert.True(flag);
         }
 
         #endregion
