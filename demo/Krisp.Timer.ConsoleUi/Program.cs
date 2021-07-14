@@ -4,8 +4,7 @@ using System.Threading.Tasks;
 using Krisp.Timer;
 
 ITimer timer = new Krisp.Timer.Timer();
-Enumerable.Range(1,20)
-    .AsParallel()
+ParallelEnumerable.Range(1,20)
     .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
     .ForAll(num =>
     {
