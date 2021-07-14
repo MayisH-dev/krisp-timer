@@ -5,7 +5,7 @@ using Xunit;
 namespace Krisp.Timer.UnitTests
 {
     /// <remarks>
-    /// Given the non-deterministic nature of multithreaded environments some unit tests may not execute as intended
+    /// Given the non-deterministic nature of multithreaded environments some unit tests may not always pass as intended
     /// </remarks>
     public sealed class TimerTests
     {

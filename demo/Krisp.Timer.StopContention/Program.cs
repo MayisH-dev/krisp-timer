@@ -4,19 +4,20 @@ using System.Threading.Tasks;
 using Krisp.Timer;
 
 // Showcases the non deterministic nature of Timer.Stop()
-// In a highly concurrent system, the upside of synchronizing this operation will not have much upside as
-
+// In a highly concurrent system, the upside of synchronizing this operation will not have much upside anyways
+// We just need Timer's underlying cache of request tokens to always stay consistent with the callbacks that were not cancelled by Stop()
 ITimer timer = new Krisp.Timer.Timer();
 
 ParallelEnumerable.Range(1, 10)
+    .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
     .ForAll(
-        num => {
-            if(num is 4)
+        callbackId => {
+            if(callbackId is 5)
                 timer.Stop();
             else
                 timer.Start(
-                    _ => Console.WriteLine("Callback number: {0,2} has not been cancelled yet", num),
-                    TimeSpan.FromMilliseconds(100 + num),
+                    _ => Console.WriteLine("Callback number: {0,2} has not been cancelled yet", callbackId),
+                    TimeSpan.FromMilliseconds(100 + callbackId),
                     100
                 );
         }

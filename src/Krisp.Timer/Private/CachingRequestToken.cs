@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Krisp.Timer.Private
 {
@@ -14,17 +13,23 @@ namespace Krisp.Timer.Private
 
         private protected override void OnCancel()
         {
+            // OnCancel is protected against disposed state
+            // Can safely ignore this warning for now
             _cache.TryRemove(this, out Unit _);
         }
 
         private protected override void OnDispose()
         {
+            // OnDispose is protected against disposed state
+            // Can safely ignore this warning for now
             _cache.TryRemove(this, out Unit _);
             _cache = null!;
         }
 
         private protected override void OnSchedule()
         {
+            // OnSchedule is protected against disposed state
+            // Can safely ignore this warning for now
             _cache.TryAdd(this, Unit.Value);
         }
     }
