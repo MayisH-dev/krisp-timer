@@ -1,0 +1,30 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug 'StopContention'",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/demo/Krisp.Timer.StopContention/bin/Debug/net6.0/Krisp.Timer.StopContention.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/demo/Krisp.Timer.StopContention",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Debug 'ConsoleUi'",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/demo/Krisp.Timer.ConsoleUi/bin/Debug/net6.0/Krisp.Timer.ConsoleUi.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/demo/Krisp.Timer.ConsoleUi",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+    ]
+}
