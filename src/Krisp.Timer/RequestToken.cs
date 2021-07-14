@@ -19,8 +19,28 @@ namespace Krisp.Timer
 
         private readonly object _sync = new();
 
+        /// <summary>
+        /// Defines pre-dispose behavior for inherited types
+        /// </summary>
+        /// <remarks>
+        /// This call is protected against disposed state
+        /// </remarks>
         private protected abstract void OnDispose();
+
+        /// <summary>
+        /// Defines schedule behavior for inherited types
+        /// </summary>
+        /// <remarks>
+        /// This call is protected against disposed state
+        /// </remarks>
         private protected abstract void OnSchedule();
+
+        /// <summary>
+        /// Defines cancellation behavior for inherited types
+        /// </summary>
+        /// <remarks>
+        /// This call is protected against disposed state
+        /// </remarks>
         private protected abstract void OnCancel();
 
         private protected RequestToken()

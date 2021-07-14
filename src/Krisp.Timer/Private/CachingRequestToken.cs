@@ -1,10 +1,11 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Krisp.Timer.Private
 {
     internal sealed class CachingRequestToken : RequestToken
     {
-        private readonly ConcurrentDictionary<CachingRequestToken, Unit> _cache;
+        private ConcurrentDictionary<CachingRequestToken, Unit>? _cache;
 
         public CachingRequestToken(ConcurrentDictionary<CachingRequestToken, Unit> cache)
         {
@@ -13,12 +14,13 @@ namespace Krisp.Timer.Private
 
         private protected override void OnCancel()
         {
-            _cache.TryRemove(this, out var _);
+            _cache.TryRemove(this, out Unit _);
         }
 
         private protected override void OnDispose()
         {
-            _cache.TryRemove(this, out var _);
+            _cache.TryRemove(this, out Unit _);
+            _cache = null!;
         }
 
         private protected override void OnSchedule()

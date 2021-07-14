@@ -43,13 +43,13 @@ namespace Krisp.Timer
         }
 
         /// <inheritdoc />
-        public void Cancel(RequestToken requestToken) => requestToken.TryCancel();
+        public void Cancel(RequestToken requestToken) => _ = requestToken.TryCancel();
 
         /// <inheritdoc />
         public void Stop()
         {
             foreach (var timerRequestToken in _scheduledSet.Keys)
-                timerRequestToken.TryCancel();
+                _ = timerRequestToken.TryCancel();
         }
 
         private void ThrowWhenNotInCache(CachingRequestToken requestToken)
