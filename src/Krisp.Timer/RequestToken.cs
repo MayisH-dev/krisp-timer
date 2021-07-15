@@ -43,6 +43,14 @@ namespace Krisp.Timer
         /// </remarks>
         private protected abstract void OnCancel();
 
+        /// <summary>
+        /// Defines completion behavior for inherited types
+        /// </summary>
+        /// <remarks>
+        /// This call is not protected against disposed state
+        /// </remarks>
+        private protected abstract void OnComplete();
+
         private protected RequestToken()
         {
             _cancellationTokenSource = new();
@@ -74,7 +82,7 @@ namespace Krisp.Timer
         /// <param name="callback">The cancellable callback</param>
         /// <param name="recurrence">The number of times the callback is invoked</param>
         /// <param name="token">The cancellation token</param>
-        private protected static void ScheduleTaskPool(
+        private void ScheduleTaskPool(
             Action<CancellationToken> callback,
             TimeSpan interval,
             int recurrence,
@@ -94,6 +102,7 @@ namespace Krisp.Timer
                             await Task.Delay(interval, token);
                             callback(token);
                         }
+                    OnComplete();
                 },
                 token);
 

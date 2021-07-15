@@ -32,5 +32,12 @@ namespace Krisp.Timer.Private
             // Can safely ignore this warning for now
             _cache.TryAdd(this, Unit.Value);
         }
+
+        private protected override void OnComplete()
+        {
+            // OnComplete is not protected against disposed state
+            // Can safely ignore this warning for now
+            _cache?.TryRemove(this, out Unit _);
+        }
     }
 }
