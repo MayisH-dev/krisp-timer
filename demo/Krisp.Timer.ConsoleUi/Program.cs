@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Krisp.Timer;
 
-ITimer timer = new Krisp.Timer.Timer();
+ITimer timer = new Timer();
 ParallelEnumerable.Range(1,20)
     .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
     .ForAll(callbackId =>
